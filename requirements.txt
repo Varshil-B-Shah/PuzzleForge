@@ -1,7 +1,6 @@
 streamlit>=1.32.0
-streamlit-chess>=0.0.5
 python-chess>=1.10.0
-azure-openai>=1.30.0
+openai>=1.30.0
 python-dotenv>=1.0.0
 plotly>=5.18.0
 pytest>=8.0.0
