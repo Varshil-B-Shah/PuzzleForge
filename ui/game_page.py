@@ -77,7 +77,7 @@ def _handle_player_move(uci: str, board: ChessBoard):
 
 def _load_level2_report() -> str | None:
     reports = database.get_level2_reports(1)
-    return reports[0]["scouting_report"] if reports else None
+    return reports[0] if reports else None
 
 
 def _load_level3_profile() -> str | None:
