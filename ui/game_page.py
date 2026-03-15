@@ -24,7 +24,7 @@ def render():
 
     # Board display via streamlit-chess
     try:
-        from streamlit_chess import chess_board
+        from streamlit_chess import chess_board  # type: ignore[import]
         result = chess_board(board.get_fen())
         if result and result.get("from") and result.get("to"):
             uci = result["from"] + result["to"] + result.get("promotion", "")
