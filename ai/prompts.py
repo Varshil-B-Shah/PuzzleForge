@@ -1,4 +1,4 @@
-def build_move_prompt(fen, legal_moves_uci, level1_ctx, level2_report, level3_profile):
+def build_move_prompt(fen, legal_moves_uci, level1_ctx, level2_report, level3_profile, player_last_move=None):
     profile = level3_profile or "No profile yet. Play solid intermediate chess with occasional natural mistakes."
     scouting = level2_report or "No scouting data yet."
     l1 = level1_ctx or "No annotations yet — game just started."
@@ -14,6 +14,8 @@ def build_move_prompt(fen, legal_moves_uci, level1_ctx, level2_report, level3_pr
         "Balanced."
     )
 
+    last_move_line = f"\nPLAYER'S LAST MOVE: {player_last_move}" if player_last_move else ""
+
     return f"""PLAYER PROFILE:
 {profile}
 
@@ -21,7 +23,7 @@ SCOUTING REPORT:
 {scouting}
 
 THIS GAME SO FAR:
-{l1}
+{l1}{last_move_line}
 
 CURRENT BOARD (FEN):
 {fen}
@@ -36,7 +38,7 @@ YOUR PERSONALITY:
 {personality}
 
 Choose exactly ONE move from the legal moves list above (UCI format).
-Write one observation about what the player's last move reveals about their style.
+Write one specific observation about what the player's last move (UCI: {player_last_move or "unknown"}) reveals about their playing style or tendencies.
 
 Respond in this EXACT format — no other text:
 MOVE: [uci]

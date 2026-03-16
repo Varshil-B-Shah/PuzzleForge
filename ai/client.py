@@ -23,7 +23,7 @@ def _create_client() -> OpenAI:
     """
     use_global = os.environ.get("USE_GLOBAL_OPENAI", "").lower() in {"1", "true", "yes"}
     azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    azure_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    azure_key = os.environ.get("AZURE_OPENAI_KEY") or os.environ.get("AZURE_OPENAI_API_KEY")
     global_endpoint = os.environ.get("OPENAI_ENDPOINT", "https://models.inference.azure.com")
     global_key = os.environ.get("OPENAI_API_KEY")
 
@@ -38,7 +38,7 @@ def _create_client() -> OpenAI:
 
     raise LLMError(
         "No valid Azure OpenAI configuration found. "
-        "Set AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY, or OPENAI_API_KEY."
+        "Set AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_KEY in your .env file."
     )
 
 

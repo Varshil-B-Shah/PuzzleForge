@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+ui/chess_frontend/node_modules/
+ui/chess_frontend/build/

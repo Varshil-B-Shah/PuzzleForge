@@ -1,5 +1,6 @@
 import chess
 import chess.pgn
+import chess.svg
 import io
 
 
@@ -40,6 +41,11 @@ class ChessBoard:
     def parse_san_to_uci(self, san: str) -> str:
         """Convert SAN (e.g. 'Nf3') to UCI (e.g. 'g1f3'). Raises ValueError on bad input."""
         return self._board.parse_san(san).uci()
+
+    def as_svg(self, last_move_uci: str | None = None, size: int = 420) -> str:
+        """Return an SVG string of the current board, optionally highlighting last_move_uci."""
+        last_move = chess.Move.from_uci(last_move_uci) if last_move_uci else None
+        return chess.svg.board(self._board, lastmove=last_move, size=size)
 
     @property
     def fullmove_number(self) -> int:

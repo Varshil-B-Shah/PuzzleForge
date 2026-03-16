@@ -18,7 +18,7 @@ def test_raises_when_deployment_not_set(monkeypatch):
 def test_returns_content_azure_resource_mode(mock_openai, monkeypatch):
     monkeypatch.setenv("AZURE_OPENAI_DEPLOYMENT_4O_MINI", "deploy-mini")
     monkeypatch.setenv("AZURE_OPENAI_ENDPOINT", "https://x.openai.azure.com/")
-    monkeypatch.setenv("AZURE_OPENAI_API_KEY", "key")
+    monkeypatch.setenv("AZURE_OPENAI_KEY", "key")
     monkeypatch.setenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     mock_client = MagicMock()
@@ -36,7 +36,7 @@ def test_returns_content_global_mode(mock_openai, monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "global-key")
     monkeypatch.setenv("USE_GLOBAL_OPENAI", "1")
     monkeypatch.delenv("AZURE_OPENAI_ENDPOINT", raising=False)
-    monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("AZURE_OPENAI_KEY", raising=False)
     mock_client = MagicMock()
     mock_openai.return_value = mock_client
     mock_client.chat.completions.create.return_value.choices[0].message.content = "MOVE: d2d4\nOBSERVATION: ok"
@@ -48,7 +48,7 @@ def test_returns_content_global_mode(mock_openai, monkeypatch):
 def test_raises_llm_error_on_api_failure(mock_openai, monkeypatch):
     monkeypatch.setenv("AZURE_OPENAI_DEPLOYMENT_4O_MINI", "deploy-mini")
     monkeypatch.setenv("AZURE_OPENAI_ENDPOINT", "https://x.openai.azure.com/")
-    monkeypatch.setenv("AZURE_OPENAI_API_KEY", "key")
+    monkeypatch.setenv("AZURE_OPENAI_KEY", "key")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     mock_client = MagicMock()
     mock_openai.return_value = mock_client

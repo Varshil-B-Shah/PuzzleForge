@@ -11,12 +11,14 @@ def get_ai_move(
     level1: AnnotationList,
     level2_report: str | None,
     level3_profile: str | None,
+    player_last_move: str | None = None,
 ) -> tuple[str, str]:
     """Return (uci_move, observation). Retries up to 3x. Falls back to random legal move."""
     legal = board.get_legal_moves()
     prompt = prompts.build_move_prompt(
         board.get_fen(), legal,
         level1.get_context_string(), level2_report, level3_profile,
+        player_last_move=player_last_move,
     )
     for _ in range(3):
         try:
