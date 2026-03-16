@@ -11,8 +11,8 @@ def render():
 
     # ── Top-level stats ───────────────────────────────────────────────────────
     col1, col2, col3 = st.columns(3)
-    wins = sum(1 for g in history if g["result"] == "1-0")
-    losses = sum(1 for g in history if g["result"] == "0-1")
+    wins = sum(1 for g in history if g["result"] == "win")
+    losses = sum(1 for g in history if g["result"] == "loss")
     draws = game_count - wins - losses
     col1.metric("Games Played", game_count)
     col2.metric("Win Rate", f"{wins/game_count*100:.0f}%" if game_count else "—")
@@ -66,7 +66,7 @@ def _render_win_rate_chart(history: list[dict]):
     buckets, rates = [], []
     for i in range(0, len(history) - bucket_size + 1, bucket_size):
         chunk = history[i : i + bucket_size]
-        wins = sum(1 for g in chunk if g["result"] == "1-0")
+        wins = sum(1 for g in chunk if g["result"] == "win")
         buckets.append(f"Games {i+1}–{i+bucket_size}")
         rates.append(wins / bucket_size * 100)
 
