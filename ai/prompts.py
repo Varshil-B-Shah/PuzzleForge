@@ -1,4 +1,5 @@
-def build_move_prompt(fen, legal_moves_uci, level1_ctx, level2_report, level3_profile, player_last_move=None):
+def build_move_prompt(fen, legal_moves_uci, level1_ctx, level2_report, level3_profile, player_last_move=None,
+                      tilt_mode=None, target_win_rate=0.40):
     profile = level3_profile or "No profile yet. Play solid intermediate chess with occasional natural mistakes."
     scouting = level2_report or "No scouting data yet."
     l1 = level1_ctx or "No annotations yet — game just started."
