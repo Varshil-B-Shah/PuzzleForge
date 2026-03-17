@@ -346,7 +346,7 @@ When you drag a piece, the React board updates immediately (local chess.js valid
 
 ---
 
-## Week 6 Features
+## Additional Features
 
 Five stretch-goal features added on top of the core memory system:
 
