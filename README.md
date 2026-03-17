@@ -313,7 +313,7 @@ Open **`http://localhost:8501`** in your browser.
 pytest tests/ -v
 ```
 
-All 74 tests pass. Tests use an isolated in-memory SQLite database (global `autouse` fixture in `conftest.py`) so they never touch your real game data.
+All 112 tests pass. Tests use an isolated in-memory SQLite database (global `autouse` fixture in `conftest.py`) so they never touch your real game data.
 
 ---
 
@@ -343,6 +343,27 @@ The count is read *after* `save_game` succeeds, so if the save fails, Level 3 ne
 ### Optimistic UI updates
 
 When you drag a piece, the React board updates immediately (local chess.js validation). The API call happens in the background. If the server rejects the move, the board rolls back. This makes the game feel responsive even when the AI is thinking.
+
+---
+
+## Week 6 Features
+
+Five stretch-goal features added on top of the core memory system:
+
+### Debrief Screen
+After every game, a mandatory 2-3 sentence GPT analysis appears before the New Game button unlocks. Covers what decided the game and one improvement suggestion. Never permanently blocks — falls back gracefully if the LLM call fails.
+
+### Trap System
+When a Level 2 scouting report exists, the AI may deliberately leave your favourite pattern available as bait — with a subtly inviting observation that hints at the setup without revealing it. Trap observations appear in **amber** in the move log.
+
+### Tilt Detection
+Three consecutive reckless moves (as classified by the AI) triggers **⚡ Exploit Mode** — the AI plays sharper and increases pressure. Three calm moves in exploit mode transitions to **😌 Cooling Down**. Three more calm moves returns to normal. A visible badge shows the current state. The state machine fires at most one transition per move, preventing double-jumps.
+
+### Difficulty Calibration
+A slider in the Profile page lets you set your target win rate (10%–70%, step 5%). The AI calibrates naturally — making human-like mistakes when needed. The setting is frozen at game start; mid-game changes take effect next game.
+
+### Game History Screen
+A new **History** tab in Streamlit lists all completed games with result emoji (✅ Win / ❌ Loss / — Draw), date, and move count. Select any game from the dropdown to review its full PGN.
 
 ---
 

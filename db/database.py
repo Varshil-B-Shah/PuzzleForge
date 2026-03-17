@@ -36,6 +36,10 @@ def init_db(db_path: str = "puzzleforge.db") -> None:
             games_analyzed   INTEGER,
             last_updated     DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS user_settings (
+            key   TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
     """)
     conn.commit()
     conn.close()
@@ -106,5 +110,22 @@ def reset_db() -> None:
             DROP TABLE IF EXISTS game_history;
             DROP TABLE IF EXISTS level2_scouting;
             DROP TABLE IF EXISTS level3_profile;
+            DROP TABLE IF EXISTS user_settings;
         """)
     init_db(_DB_PATH)
+
+
+def get_setting(key: str, default: str) -> str:
+    """Return setting value or default if key not present."""
+    with _conn() as c:
+        r = c.execute("SELECT value FROM user_settings WHERE key = ?", (key,)).fetchone()
+        return r[0] if r else default
+
+
+def save_setting(key: str, value: str) -> None:
+    """Upsert a setting via INSERT OR REPLACE."""
+    with _conn() as c:
+        c.execute(
+            "INSERT OR REPLACE INTO user_settings (key, value) VALUES (?, ?)",
+            (key, value)
+        )

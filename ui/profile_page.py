@@ -43,6 +43,20 @@ def render():
         with st.expander("Latest Post-Game Scouting Report"):
             st.write(reports[0])
 
+    # ── Difficulty ────────────────────────────────────────────────────────────
+    st.subheader("🎯 Difficulty")
+    st.caption("Set how often you want to win. Lower = harder AI.")
+    current_rate = int(float(database.get_setting("target_win_rate", "0.40")) * 100)
+    new_rate = st.slider(
+        "Target win rate (%)",
+        min_value=10, max_value=70, step=5,
+        value=current_rate,
+        label_visibility="collapsed",
+    )
+    if st.button("Save Difficulty"):
+        database.save_setting("target_win_rate", str(new_rate / 100))
+        st.success("Saved.")
+
     # ── Danger zone ───────────────────────────────────────────────────────────
     st.divider()
     with st.expander("Danger Zone"):

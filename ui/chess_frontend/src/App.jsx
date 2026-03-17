@@ -15,6 +15,9 @@ export default function App() {
   const [moveKey, setMoveKey]   = useState(0);
   const gameIdRef               = useRef(null);
   const busyRef                 = useRef(false);
+  const [tiltMode, setTiltMode]       = useState(null);
+  const [debriefText, setDebriefText] = useState(null);
+  const [debriefLoaded, setDebriefLoaded] = useState(false);
 
   // ── Start / restart game ──────────────────────────────────────────────────
   const startGame = useCallback(async () => {
@@ -24,6 +27,9 @@ export default function App() {
     setMoveLog([]);
     setLastMove(null);
     setStatus("Starting game…");
+    setTiltMode(null);
+    setDebriefText(null);
+    setDebriefLoaded(false);
     try {
       const res = await fetch("/api/game/start", { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -86,6 +92,7 @@ export default function App() {
         setFen(data.fen);
         setMoveKey(k => k + 1);
         setMoveLog(data.move_log ?? []);
+        if (data.tilt_mode !== undefined) setTiltMode(data.tilt_mode);
         if (data.last_move?.length >= 4) {
           setLastMove({ from: data.last_move.slice(0, 2), to: data.last_move.slice(2, 4) });
         }
@@ -94,6 +101,15 @@ export default function App() {
           setResult(data.result);
           const label = { win: "You win! 🎉", loss: "AI wins.", draw: "Draw." }[data.result] ?? data.result;
           setStatus(`Game over — ${label}`);
+          // Fetch debrief
+          fetch("/api/game/debrief", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ game_id: gameIdRef.current }),
+          })
+            .then(r => r.json())
+            .then(d => { setDebriefText(d.analysis); setDebriefLoaded(true); })
+            .catch(() => { setDebriefText(null); setDebriefLoaded(true); });
         } else {
           setStatus("Your turn — drag a piece to move");
         }
@@ -151,6 +167,26 @@ export default function App() {
         {status}
       </div>
 
+      {/* Tilt badge */}
+      {tiltMode === "exploit" && (
+        <div style={{
+          marginTop: "6px", padding: "5px 12px", textAlign: "center",
+          background: "#7f1d1d", color: "#fca5a5", borderRadius: "6px",
+          fontSize: "12px", fontWeight: "bold",
+        }}>
+          ⚡ Exploit Mode
+        </div>
+      )}
+      {tiltMode === "cooling" && (
+        <div style={{
+          marginTop: "6px", padding: "5px 12px", textAlign: "center",
+          background: "#1e3a5f", color: "#93c5fd", borderRadius: "6px",
+          fontSize: "12px", fontWeight: "bold",
+        }}>
+          😌 Cooling Down
+        </div>
+      )}
+
       {/* Game over banner */}
       {gameOver && (
         <div style={{
@@ -160,13 +196,29 @@ export default function App() {
           <div style={{ color: "#cba6f7", fontWeight: "bold", fontSize: "16px", marginBottom: "10px" }}>
             {resultLabel}
           </div>
-          <button onClick={startGame} style={{
-            padding: "8px 28px", background: "#89b4fa", color: "#1e1e2e",
-            border: "none", borderRadius: "6px", cursor: "pointer",
-            fontWeight: "bold", fontSize: "14px",
-          }}>
-            New Game
-          </button>
+          {!debriefLoaded ? (
+            <div style={{ color: "#a6adc8", fontSize: "13px", marginBottom: "10px" }}>
+              Analysing your game…
+            </div>
+          ) : (
+            <>
+              {debriefText && (
+                <div style={{
+                  color: "#a6adc8", fontSize: "12px", fontStyle: "italic",
+                  marginBottom: "12px", lineHeight: "1.5",
+                }}>
+                  {debriefText}
+                </div>
+              )}
+              <button onClick={startGame} style={{
+                padding: "8px 28px", background: "#89b4fa", color: "#1e1e2e",
+                border: "none", borderRadius: "6px", cursor: "pointer",
+                fontWeight: "bold", fontSize: "14px",
+              }}>
+                New Game
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -190,7 +242,10 @@ export default function App() {
                   AI: <code style={{ color: "#f38ba8", background: "#1e1e2e", padding: "1px 4px", borderRadius: "3px" }}>{entry.ai}</code>
                 </div>
                 {entry.obs && (
-                  <div style={{ color: "#a6adc8", fontSize: "12px", marginTop: "3px", paddingLeft: "14px", fontStyle: "italic" }}>
+                  <div style={{
+                    color: entry.is_trap ? "#f9a825" : "#a6adc8",
+                    fontSize: "12px", marginTop: "3px", paddingLeft: "14px", fontStyle: "italic",
+                  }}>
                     {entry.obs}
                   </div>
                 )}

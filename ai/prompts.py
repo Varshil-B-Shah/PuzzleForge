@@ -1,21 +1,42 @@
-def build_move_prompt(fen, legal_moves_uci, level1_ctx, level2_report, level3_profile, player_last_move=None,
-                      tilt_mode=None, target_win_rate=0.40):
+def build_move_prompt(
+    fen, legal_moves_uci, level1_ctx, level2_report, level3_profile,
+    player_last_move=None, tilt_mode=None, target_win_rate=0.40,
+):
     profile = level3_profile or "No profile yet. Play solid intermediate chess with occasional natural mistakes."
     scouting = level2_report or "No scouting data yet."
     l1 = level1_ctx or "No annotations yet — game just started."
     moves_str = ", ".join(legal_moves_uci)
-    strategy = (
-        "Execute the counter-strategy described in your player profile."
-        if level3_profile else
-        "Play balanced intermediate chess."
-    )
-    personality = (
-        "Embody the counter-personality described in your player profile."
-        if level3_profile else
-        "Balanced."
-    )
+    strategy = "Execute the counter-strategy described in your player profile." if level3_profile else "Play balanced intermediate chess."
+    personality = "Embody the counter-personality described in your player profile." if level3_profile else "Balanced."
 
-    last_move_line = f"\nPLAYER'S LAST MOVE: {player_last_move}" if player_last_move else ""
+    trap_section = ""
+    if level2_report:
+        trap_section = """
+TRAP OPPORTUNITY:
+The scouting report identifies exploitable patterns in this player's style.
+You may occasionally set a trap — play a move that invites their favourite line
+but has a prepared refutation. If setting a trap, write a subtly inviting
+OBSERVATION (hint without revealing the trap) and respond with TRAP: yes.
+Otherwise respond with TRAP: no.
+"""
+
+    tilt_section = f"""
+TILT MODE: {tilt_mode or "none"}
+- exploit: player is tilting — play sharply, increase pressure, exploit impatience
+- cooling: player has steadied — return to your normal counter-strategy
+- none: play normally
+"""
+
+    difficulty_section = f"""
+DIFFICULTY: Your target is to win ~{int((1 - target_win_rate) * 100)}% of games.
+Calibrate naturally — make human-like mistakes if needed to stay near this target.
+"""
+
+    reckless_section = """
+After choosing your move, classify the player's last move:
+RECKLESS: yes — if the move was impulsive, a blunder, tactically unsound, or emotionally driven
+RECKLESS: no  — if the move was solid, positional, or strategically sound
+"""
 
     return f"""PLAYER PROFILE:
 {profile}
@@ -24,7 +45,7 @@ SCOUTING REPORT:
 {scouting}
 
 THIS GAME SO FAR:
-{l1}{last_move_line}
+{l1}
 
 CURRENT BOARD (FEN):
 {fen}
@@ -37,13 +58,15 @@ YOUR STRATEGIC GOAL:
 
 YOUR PERSONALITY:
 {personality}
-
+{trap_section}{tilt_section}{difficulty_section}
 Choose exactly ONE move from the legal moves list above (UCI format).
-Write one specific observation about what the player's last move (UCI: {player_last_move or "unknown"}) reveals about their playing style or tendencies.
-
+Write one observation about what the player's last move reveals about their style.
+{reckless_section}
 Respond in this EXACT format — no other text:
 MOVE: [uci]
-OBSERVATION: [one sentence]"""
+OBSERVATION: [one sentence]
+TRAP: yes/no
+RECKLESS: yes/no"""
 
 
 def build_level1_compression_prompt(annotations: list[str]) -> str:
@@ -92,3 +115,15 @@ Produce an updated player profile including:
 - Counter-Personality (how the AI should play against them)
 
 Keep under 600 tokens."""
+
+
+def build_debrief_prompt(pgn: str, result: str, l2_report: str | None) -> str:
+    scouting = l2_report or "No prior scouting data."
+    return f"""Analyse this chess game and write a post-game debrief for the player.
+
+GAME RESULT: {result}
+PGN: {pgn}
+SCOUTING CONTEXT: {scouting}
+
+Write exactly 2-3 sentences. Cover: what decided the game, and one concrete improvement for next time.
+Address the player directly ("You..."). No headers, no lists — plain sentences only. Max 60 words."""

@@ -58,3 +58,31 @@ def test_save_level3_profile_replaces_not_accumulates():
     count = conn.execute("SELECT COUNT(*) FROM level3_profile").fetchone()[0]
     conn.close()
     assert count == 1
+
+
+def test_user_settings_table_exists_after_init():
+    conn = sqlite3.connect(database._DB_PATH)
+    tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    conn.close()
+    assert "user_settings" in tables
+
+
+def test_get_setting_returns_default_when_absent():
+    assert database.get_setting("target_win_rate", "0.40") == "0.40"
+
+
+def test_save_setting_persists():
+    database.save_setting("target_win_rate", "0.55")
+    assert database.get_setting("target_win_rate", "0.40") == "0.55"
+
+
+def test_save_setting_overwrites():
+    database.save_setting("target_win_rate", "0.30")
+    database.save_setting("target_win_rate", "0.70")
+    assert database.get_setting("target_win_rate", "0.40") == "0.70"
+
+
+def test_reset_db_clears_user_settings():
+    database.save_setting("target_win_rate", "0.65")
+    database.reset_db()
+    assert database.get_setting("target_win_rate", "0.40") == "0.40"
